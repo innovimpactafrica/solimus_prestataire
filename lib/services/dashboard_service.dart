@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/dashboard_models.dart';
 
+class AbonnementInactifException implements Exception {}
+
 class DashboardService {
   static const _base = 'https://api.solimus.innovimpactdev.cloud';
 
@@ -19,6 +21,9 @@ class DashboardService {
     if (response.statusCode == 200) {
       return DashboardData.fromJson(
           jsonDecode(response.body) as Map<String, dynamic>);
+    }
+    if (response.statusCode == 403) {
+      throw AbonnementInactifException();
     }
     throw Exception('Erreur chargement tableau de bord (${response.statusCode})');
   }

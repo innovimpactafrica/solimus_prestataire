@@ -30,68 +30,71 @@ class PaymentInitResponse {
 }
 
 class PaymentHistory {
+  final String planName;
+  final String status;
   final String reference;
-  final String plan;
-  final double montant;
+  final double amount;
+  final String paymentMethod;
   final DateTime date;
-  final String moyenPaiement;
-  final String statut;
 
   const PaymentHistory({
+    required this.planName,
+    required this.status,
     required this.reference,
-    required this.plan,
-    required this.montant,
+    required this.amount,
+    required this.paymentMethod,
     required this.date,
-    required this.moyenPaiement,
-    required this.statut,
   });
 
   factory PaymentHistory.fromJson(Map<String, dynamic> json) => PaymentHistory(
+        planName: json['planName'] as String? ?? '',
+        status: json['status'] as String? ?? '',
         reference: json['reference'] as String? ?? '',
-        plan: json['plan'] as String? ?? '',
-        montant: (json['montant'] as num?)?.toDouble() ?? 0,
+        amount: (json['amount'] as num?)?.toDouble() ?? 0,
+        paymentMethod: json['paymentMethod'] as String? ?? '',
         date: _parseProfileDate(json['date'] as String?),
-        moyenPaiement: json['moyenPaiement'] as String? ?? '',
-        statut: json['statut'] as String? ?? '',
       );
 }
 
 class SubscriptionInfo {
-  final String plan;
-  final String status;
+  final String planName;
   final bool active;
-  final DateTime dateActivation;
-  final DateTime dateExpiration;
-  final String moyenPaiement;
-  final bool renouvellementAuto;
-  final List<String> avantages;
-  final List<PaymentHistory> historiquePaiements;
+  final String status;
+  final DateTime startDate;
+  final DateTime endDate;
+  final String paymentMethod;
+  final List<PaymentHistory> paymentHistory;
+  final int totalHistoryPages;
+  final int totalHistoryElements;
 
   const SubscriptionInfo({
-    required this.plan,
-    required this.status,
+    required this.planName,
     required this.active,
-    required this.dateActivation,
-    required this.dateExpiration,
-    required this.moyenPaiement,
-    required this.renouvellementAuto,
-    required this.avantages,
-    required this.historiquePaiements,
+    required this.status,
+    required this.startDate,
+    required this.endDate,
+    required this.paymentMethod,
+    required this.paymentHistory,
+    required this.totalHistoryPages,
+    required this.totalHistoryElements,
   });
 
-  factory SubscriptionInfo.fromJson(Map<String, dynamic> json) => SubscriptionInfo(
-        plan: json['plan'] as String? ?? '',
-        status: json['status'] as String? ?? '',
-        active: json['active'] as bool? ?? false,
-        dateActivation: _parseProfileDate(json['dateActivation'] as String?),
-        dateExpiration: _parseProfileDate(json['dateExpiration'] as String?),
-        moyenPaiement: json['moyenPaiement'] as String? ?? '',
-        renouvellementAuto: json['renouvellementAuto'] as bool? ?? false,
-        avantages: (json['avantages'] as List? ?? []).map((e) => e?.toString() ?? '').where((e) => e.isNotEmpty).toList(),
-        historiquePaiements: (json['historiquePaiements'] as List? ?? [])
-            .map((e) => PaymentHistory.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
+  factory SubscriptionInfo.fromJson(Map<String, dynamic> json) {
+    final history = (json['paymentHistory'] as Map<String, dynamic>?) ?? {};
+    return SubscriptionInfo(
+      planName: json['planName'] as String? ?? '',
+      active: json['active'] as bool? ?? false,
+      status: json['status'] as String? ?? '',
+      startDate: _parseProfileDate(json['startDate'] as String?),
+      endDate: _parseProfileDate(json['endDate'] as String?),
+      paymentMethod: json['paymentMethod'] as String? ?? '',
+      totalHistoryPages: (history['totalPages'] as num?)?.toInt() ?? 0,
+      totalHistoryElements: (history['totalElements'] as num?)?.toInt() ?? 0,
+      paymentHistory: (history['content'] as List? ?? [])
+          .map((e) => PaymentHistory.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
 }
 
 class ProviderProfile {

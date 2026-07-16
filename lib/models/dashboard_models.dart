@@ -6,8 +6,8 @@ class PerformanceHebdo {
 
   factory PerformanceHebdo.fromJson(Map<String, dynamic> json) =>
       PerformanceHebdo(
-        jour: json['jour'] as String,
-        montant: (json['montant'] as num).toDouble(),
+        jour: json['jour'] as String? ?? '',
+        montant: (json['montant'] as num? ?? 0).toDouble(),
       );
 }
 
@@ -56,24 +56,22 @@ class DashboardData {
         companyName: json['companyName'] as String? ?? '',
         role: json['role'] as String? ?? '',
         profilePhotoUrl: json['profilePhotoUrl'] as String?,
-        totalRequestsCount: (json['totalRequestsCount'] as num).toInt(),
-        pendingQuotesCount: (json['pendingQuotesCount'] as num).toInt(),
-        inProgressCount: (json['inProgressCount'] as num).toInt(),
-        validatedCount: (json['validatedCount'] as num).toInt(),
-        requestsVariation: (json['requestsVariation'] as num).toDouble(),
-        pendingQuotesVariation:
-            (json['pendingQuotesVariation'] as num).toDouble(),
-        inProgressVariation: (json['inProgressVariation'] as num).toDouble(),
-        validatedVariation: (json['validatedVariation'] as num).toDouble(),
-        pendingMissionsCount: (json['pendingMissionsCount'] as num).toInt(),
-        pendingPaymentsAmount:
-            (json['pendingPaymentsAmount'] as num).toDouble(),
-        performanceHebdo: (json['performanceHebdo'] as List)
+        totalRequestsCount: (json['totalRequestsCount'] as num? ?? 0).toInt(),
+        pendingQuotesCount: (json['pendingQuotesCount'] as num? ?? 0).toInt(),
+        inProgressCount: (json['inProgressCount'] as num? ?? 0).toInt(),
+        validatedCount: (json['validatedCount'] as num? ?? 0).toInt(),
+        requestsVariation: (json['requestsVariation'] as num? ?? 0).toDouble(),
+        pendingQuotesVariation: (json['pendingQuotesVariation'] as num? ?? 0).toDouble(),
+        inProgressVariation: (json['inProgressVariation'] as num? ?? 0).toDouble(),
+        validatedVariation: (json['validatedVariation'] as num? ?? 0).toDouble(),
+        pendingMissionsCount: (json['pendingMissionsCount'] as num? ?? 0).toInt(),
+        pendingPaymentsAmount: (json['pendingPaymentsAmount'] as num? ?? 0).toDouble(),
+        performanceHebdo: (json['performanceHebdo'] as List? ?? [])
             .map((e) => PerformanceHebdo.fromJson(e as Map<String, dynamic>))
             .toList(),
-        totalRevenu: (json['totalRevenu'] as num).toDouble(),
-        moyenneParJour: (json['moyenneParJour'] as num).toDouble(),
-        totalInterventions: (json['totalInterventions'] as num).toInt(),
-        variationHebdo: (json['variationHebdo'] as num).toDouble(),
+        totalRevenu: (json['totalRevenu'] as num? ?? 0).toDouble(),
+        moyenneParJour: (json['moyenneParJour'] as num? ?? 0).toDouble(),
+        totalInterventions: (json['totalInterventions'] as num? ?? 0).toInt(),
+        variationHebdo: (json['variationHebdo'] as num? ?? 0).toDouble(),
       );
 }

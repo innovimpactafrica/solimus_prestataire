@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "11450352892",
+    "project_id": "solimus-prestataire",
+    "storage_bucket": "solimus-prestataire.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:11450352892:android:678ee5d0dc1d30d14bc379",
+        "android_client_info": {
+          "package_name": "com.solimus.solimus_prestataire"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC7TrPa8SvXyzWDcmj0-8ZmPM92CTqC0no"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../home/home.dart';
 import '../demandes/demandes.dart';
 import '../profil/profil.dart';
+import '../travaux/travaux.dart';
+import '../../widgets/nav_item.dart';
 import 'demande_versement.dart';
 import '../../models/wallet_models.dart';
 import '../../services/demandes_service.dart';
@@ -51,42 +53,14 @@ class _WalletPageState extends State<WalletPage> {
     return '${d.day.toString().padLeft(2, '0')} ${months[d.month]} ${d.year}';
   }
 
-  Widget _navItem(String iconPath, String label, {VoidCallback? onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SvgPicture.asset(iconPath, width: 24, height: 24),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontWeight: FontWeight.w500,
-              fontSize: 10,
-              height: 1.2,
-              color: const Color(0xFFFFFFFF),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _transactionRow(WalletTransaction tx) {
-    final bool isPending = tx.isPending;
     final bool isEntree = tx.isEntree;
 
     final Color badgeColor;
     final String iconPath;
     final Color amountColor;
 
-    if (isPending) {
-      badgeColor = const Color(0xFFFFFBEB);
-      iconPath = 'assets/icons/pendig1.svg';
-      amountColor = const Color(0xFF00A63E);
-    } else if (isEntree) {
+    if (isEntree) {
       badgeColor = const Color(0xFFF0FDF4);
       iconPath = 'assets/icons/vert.svg';
       amountColor = const Color(0xFF00A63E);
@@ -97,8 +71,8 @@ class _WalletPageState extends State<WalletPage> {
     }
 
     final String amountStr = isEntree
-        ? '+${_formatAmount(tx.montant)}'
-        : '-${_formatAmount(tx.montant)}';
+        ? '+${_formatAmount(tx.amount)}'
+        : '-${_formatAmount(tx.amount)}';
 
     return Container(
       width: 360,
@@ -142,7 +116,7 @@ class _WalletPageState extends State<WalletPage> {
                   ),
                 ),
                 Text(
-                  _formatDate(tx.date),
+                  _formatDate(tx.transactionDate),
                   style: GoogleFonts.inter(
                     fontWeight: FontWeight.w400,
                     fontSize: 12,
@@ -167,29 +141,6 @@ class _WalletPageState extends State<WalletPage> {
                   color: amountColor,
                 ),
               ),
-              if (isPending) ...[
-                const SizedBox(height: 4),
-                Container(
-                  width: 98,
-                  height: 23,
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0x1AF9C20A),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'En attente',
-                      style: GoogleFonts.beVietnamPro(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                        height: 1.0,
-                        color: const Color(0xFFF9C20A),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
             ],
           ),
         ],
@@ -199,9 +150,9 @@ class _WalletPageState extends State<WalletPage> {
 
   @override
   Widget build(BuildContext context) {
-    final solde = _data?.soldeDisponible ?? 0;
-    final enAttente = _data?.soldeEnAttente ?? 0;
-    final ceMois = _data?.totalCeMois ?? 0;
+    final solde = _data?.availableBalance ?? 0;
+    final enAttente = _data?.pendingBalance ?? 0;
+    final ceMois = _data?.totalThisMonth ?? 0;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFAF9F4),
@@ -227,45 +178,36 @@ class _WalletPageState extends State<WalletPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _navItem(
-                'assets/icons/accueil.svg',
-                'Accueil',
-                onTap: () => Navigator.of(ctx).pushReplacement(
-                  PageRouteBuilder(
-                    pageBuilder: (c, a, s) => const HomePage(),
-                    transitionsBuilder: (c, anim, s, child) => FadeTransition(
-                      opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut),
-                      child: child,
-                    ),
-                    transitionDuration: const Duration(milliseconds: 300),
-                  ),
-                ),
+              NavItem(iconPath: 'assets/icons/accueil.svg', label: 'Accueil',
+                onTap: () => Navigator.of(ctx).pushReplacement(PageRouteBuilder(
+                  pageBuilder: (c, a, s) => const HomePage(),
+                  transitionsBuilder: (c, anim, s, child) => FadeTransition(opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut), child: child),
+                  transitionDuration: const Duration(milliseconds: 300),
+                )),
               ),
-              const SizedBox(width: 56),
-              _navItem(
-                'assets/icons/demande nav.svg',
-                'Demandes',
-                onTap: () => Navigator.of(ctx).pushReplacement(
-                  PageRouteBuilder(
-                    pageBuilder: (c, a, s) => const DemandesPage(),
-                    transitionsBuilder: (c, anim, s, child) => FadeTransition(
-                      opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut),
-                      child: child,
-                    ),
-                    transitionDuration: const Duration(milliseconds: 300),
-                  ),
-                ),
+              const SizedBox(width: 30),
+              NavItem(iconPath: 'assets/icons/demande nav.svg', label: 'Demandes',
+                onTap: () => Navigator.of(ctx).pushReplacement(PageRouteBuilder(
+                  pageBuilder: (c, a, s) => const DemandesPage(),
+                  transitionsBuilder: (c, anim, s, child) => FadeTransition(opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut), child: child),
+                  transitionDuration: const Duration(milliseconds: 300),
+                )),
               ),
-              const SizedBox(width: 56),
-              _navItem('assets/icons/wallet.svg', 'Wallet'),
-              const SizedBox(width: 56),
-              _navItem(
-                'assets/icons/profil.svg',
-                'Mon profil',
+              const SizedBox(width: 30),
+              NavItem(iconPath: 'assets/icons/travaux.svg', label: 'Travaux',
+                onTap: () => Navigator.of(ctx).pushReplacement(PageRouteBuilder(
+                  pageBuilder: (c, a, s) => const TravauxPage(),
+                  transitionsBuilder: (c, anim, s, child) => FadeTransition(opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut), child: child),
+                  transitionDuration: const Duration(milliseconds: 300),
+                )),
+              ),
+              const SizedBox(width: 30),
+              const NavItem(iconPath: 'assets/icons/wallet.svg', label: 'Wallet', isActive: true),
+              const SizedBox(width: 30),
+              NavItem(iconPath: 'assets/icons/profil.svg', label: 'Mon profil',
                 onTap: () => Navigator.of(ctx).pushReplacement(PageRouteBuilder(
                   pageBuilder: (c, a, s) => const ProfilPage(),
-                  transitionsBuilder: (c, anim, s, child) => FadeTransition(
-                    opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut), child: child),
+                  transitionsBuilder: (c, anim, s, child) => FadeTransition(opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut), child: child),
                   transitionDuration: const Duration(milliseconds: 300),
                 )),
               ),

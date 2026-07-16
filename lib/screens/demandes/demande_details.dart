@@ -1,11 +1,7 @@
-import 'dart:convert';
 import 'dart:developer' as dev;
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/demandes_models.dart';
 import '../../services/demandes_service.dart';
 import 'create_devis.dart';
@@ -101,8 +97,9 @@ class _DemandeDetailsPageState extends State<DemandeDetailsPage> {
   Color _badgeBg(String status) {
     switch (status) {
       case 'PENDING':
-      case 'SYNDIC_ASSIGNED':  return const Color(0x1AF9C20A);
-      case 'QUOTE_SENT':       return const Color(0x1A1447E6);
+      case 'SYNDIC_ASSIGNED':
+      case 'PENDING_QUOTE':   return const Color(0x1AF9C20A);
+      case 'QUOTE_SENT':      return const Color(0x1A1447E6);
       case 'SYNDIC_VALIDATED':
       case 'STARTED':          return const Color(0x1AAD46FF);
       case 'FINISHED':         return const Color(0x1AFE9A00);
@@ -115,8 +112,9 @@ class _DemandeDetailsPageState extends State<DemandeDetailsPage> {
   Color _statusIconBg(String status) {
     switch (status) {
       case 'PENDING':
-      case 'SYNDIC_ASSIGNED':  return const Color(0xFFF9C20A);
-      case 'QUOTE_SENT':       return const Color(0xFF1447E6);
+      case 'SYNDIC_ASSIGNED':
+      case 'PENDING_QUOTE':   return const Color(0xFFF9C20A);
+      case 'QUOTE_SENT':      return const Color(0xFF1447E6);
       case 'SYNDIC_VALIDATED':
       case 'STARTED':          return const Color(0xFFAD46FF);
       case 'FINISHED':         return const Color(0xFFC37600);
@@ -129,8 +127,9 @@ class _DemandeDetailsPageState extends State<DemandeDetailsPage> {
   String _statusIcon(String status) {
     switch (status) {
       case 'PENDING':
-      case 'SYNDIC_ASSIGNED':  return 'assets/icons/En attente.svg';
-      case 'QUOTE_SENT':       return 'assets/icons/donew.svg';
+      case 'SYNDIC_ASSIGNED':
+      case 'PENDING_QUOTE':   return 'assets/icons/En attente.svg';
+      case 'QUOTE_SENT':      return 'assets/icons/donew.svg';
       case 'SYNDIC_VALIDATED':
       case 'STARTED':          return 'assets/icons/En cours.svg';
       case 'FINISHED':         return 'assets/icons/Valide.svg';
@@ -143,8 +142,9 @@ class _DemandeDetailsPageState extends State<DemandeDetailsPage> {
   Color _badgeText(String status) {
     switch (status) {
       case 'PENDING':
-      case 'SYNDIC_ASSIGNED':  return const Color(0xFFF9C20A);
-      case 'QUOTE_SENT':       return const Color(0xFF1447E6);
+      case 'SYNDIC_ASSIGNED':
+      case 'PENDING_QUOTE':   return const Color(0xFFF9C20A);
+      case 'QUOTE_SENT':      return const Color(0xFF1447E6);
       case 'SYNDIC_VALIDATED':
       case 'STARTED':          return const Color(0xFFAD46FF);
       case 'FINISHED':         return const Color(0xFFC37600);
@@ -608,7 +608,7 @@ class _DemandeDetailsPageState extends State<DemandeDetailsPage> {
             ],
 
             const SizedBox(height: 16),
-            if (req.status == 'PENDING') ...[
+            if (req.status == 'PENDING' || req.status == 'SYNDIC_ASSIGNED' || req.status == 'PENDING_QUOTE') ...[
               _actionButton(
                 icon: 'assets/icons/file.svg',
                 label: 'Créer un devis',
@@ -641,98 +641,53 @@ class _DemandeDetailsPageState extends State<DemandeDetailsPage> {
   }
 }
 
-class _PhotoTile extends StatefulWidget {
+class _PhotoTile extends StatelessWidget {
   final String url;
   const _PhotoTile({required this.url});
 
   @override
-  State<_PhotoTile> createState() => _PhotoTileState();
-}
-
-class _PhotoTileState extends State<_PhotoTile> {
-  Uint8List? _bytes;
-  bool _loading = true;
-  bool _error = false;
-
-  bool get _isBase64 => widget.url.startsWith('data:image');
-
-  String get _fullUrl {
-    if (_isBase64 || widget.url.startsWith('http')) return widget.url;
-    const base = 'https://api.solimus.innovimpactdev.cloud';
-    final path = widget.url.startsWith('/') ? widget.url : '/${widget.url}';
-    return '$base$path';
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadImage();
-  }
-
-  Future<void> _loadImage() async {
-    if (_isBase64) {
-      try {
-        final bytes = base64Decode(widget.url.substring(widget.url.indexOf(',') + 1));
-        if (mounted) setState(() { _bytes = bytes; _loading = false; });
-      } catch (_) {
-        if (mounted) setState(() { _error = true; _loading = false; });
-      }
-      return;
-    }
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('accessToken') ?? '';
-      dev.log('[PhotoTile] fetching: $_fullUrl');
-      final response = await http.get(
-        Uri.parse(_fullUrl),
-        headers: {'Authorization': 'Bearer $token'},
-      );
-      dev.log('[PhotoTile] status: ${response.statusCode}, bytes: ${response.bodyBytes.length}');
-      if (response.statusCode == 200 && mounted) {
-        setState(() { _bytes = response.bodyBytes; _loading = false; });
-      } else {
-        if (mounted) setState(() { _error = true; _loading = false; });
-      }
-    } catch (e) {
-      dev.log('[PhotoTile] error: $e');
-      if (mounted) setState(() { _error = true; _loading = false; });
-    }
-  }
-
-  Widget _thumb({double w = 152, double h = 112}) {
-    if (_loading) return Container(width: w, height: h, color: const Color(0xFFE5E7EB),
-      child: const Center(child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF6F675E))));
-    if (_error || _bytes == null) return Container(width: w, height: h, color: const Color(0xFFE5E7EB),
-      child: const Icon(Icons.broken_image, color: Color(0xFF9CA3AF)));
-    return Image.memory(_bytes!, width: w, height: h, fit: BoxFit.cover);
-  }
-
-  @override
   Widget build(BuildContext context) {
+    debugPrint('[PhotoTile] building with url: $url');
     return GestureDetector(
-      onTap: () {
-        if (_bytes == null) return;
-        Navigator.of(context).push(MaterialPageRoute(
-          builder: (ctx) => Scaffold(
+      onTap: () => Navigator.of(context).push(MaterialPageRoute(
+        builder: (ctx) => Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(
             backgroundColor: Colors.black,
-            appBar: AppBar(
-              backgroundColor: Colors.black,
-              leading: IconButton(
-                icon: const Icon(Icons.close, color: Colors.white),
-                onPressed: () => Navigator.of(ctx).pop(),
-              ),
-            ),
-            body: Center(
-              child: InteractiveViewer(
-                child: Image.memory(_bytes!, fit: BoxFit.contain),
-              ),
+            leading: IconButton(
+              icon: const Icon(Icons.close, color: Colors.white),
+              onPressed: () => Navigator.of(ctx).pop(),
             ),
           ),
-        ));
-      },
+          body: Center(
+            child: InteractiveViewer(
+              child: Image.network(url, fit: BoxFit.contain),
+            ),
+          ),
+        ),
+      )),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(10),
-        child: _thumb(),
+        child: Image.network(
+          url,
+          width: 152,
+          height: 112,
+          fit: BoxFit.cover,
+          loadingBuilder: (_, child, progress) => progress == null
+              ? child
+              : Container(
+                  width: 152, height: 112, color: const Color(0xFFE5E7EB),
+                  child: const Center(child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF6F675E))),
+                ),
+          errorBuilder: (_, err, ___) {
+            debugPrint('[PhotoTile] ERREUR chargement image: $url');
+            debugPrint('[PhotoTile] erreur détail: $err');
+            return Container(
+              width: 152, height: 112, color: const Color(0xFFE5E7EB),
+              child: const Icon(Icons.broken_image, color: Color(0xFF9CA3AF)),
+            );
+          },
+        ),
       ),
     );
   }

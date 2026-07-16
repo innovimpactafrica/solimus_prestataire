@@ -18,12 +18,14 @@ class _DemandeVersementPageState extends State<DemandeVersementPage> {
   String _amountValue = '';
   bool _submitting = false;
   final _phoneController = TextEditingController();
+  final _amountController = TextEditingController();
 
   static const _methodValues = ['WAVE', 'ORANGE_MONEY'];
 
   @override
   void dispose() {
     _phoneController.dispose();
+    _amountController.dispose();
     super.dispose();
   }
 
@@ -50,9 +52,9 @@ class _DemandeVersementPageState extends State<DemandeVersementPage> {
     setState(() => _submitting = true);
     try {
       await DemandesService().withdraw(
-        montant: montant,
-        methode: _methodValues[_selectedMethod],
-        numeroDeTelephone: _phoneController.text.trim(),
+        amount: montant,
+        method: _methodValues[_selectedMethod],
+        phoneNumber: _phoneController.text.trim(),
       );
       if (!mounted) return;
       Navigator.of(context).pushReplacement(PageRouteBuilder(
@@ -347,17 +349,34 @@ class _DemandeVersementPageState extends State<DemandeVersementPage> {
                     ),
                     child: Row(
                       children: [
-                        Text(
-                          _amountValue.isEmpty ? '0' : _amountValue,
-                          style: GoogleFonts.inter(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 20,
-                            height: 1.0,
-                            letterSpacing: -0.45,
-                            color: const Color(0x800A0A0A),
+                        Expanded(
+                          child: TextField(
+                            controller: _amountController,
+                            keyboardType: TextInputType.number,
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 20,
+                              height: 1.0,
+                              letterSpacing: -0.45,
+                              color: const Color(0xFF0A0A0A),
+                            ),
+                            decoration: InputDecoration(
+                              hintText: '0',
+                              hintStyle: GoogleFonts.inter(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 20,
+                                color: const Color(0x800A0A0A),
+                              ),
+                              border: InputBorder.none,
+                              isDense: true,
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                            onChanged: (val) => setState(() {
+                              _amountValue = val;
+                              _selectedAmount = -1;
+                            }),
                           ),
                         ),
-                        const Spacer(),
                         Text(
                           'FCFA',
                           style: GoogleFonts.inter(
@@ -381,6 +400,7 @@ class _DemandeVersementPageState extends State<DemandeVersementPage> {
                         onTap: () => setState(() {
                           _selectedAmount = i;
                           _amountValue = _quickAmounts[i].replaceAll(' FCFA', '');
+                          _amountController.text = _amountValue;
                         }),
                         child: Container(
                           width: 99,

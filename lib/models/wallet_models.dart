@@ -13,60 +13,63 @@ DateTime _parseWalletDate(String? raw) {
 }
 
 class WalletTransaction {
+  final int id;
   final String label;
-  final double montant;
-  final String type;
-  final String statut;
-  final DateTime date;
+  final String reference;
+  final DateTime transactionDate;
+  final double amount;
+  final String mode;
+  final String category;
 
   const WalletTransaction({
+    required this.id,
     required this.label,
-    required this.montant,
-    required this.type,
-    required this.statut,
-    required this.date,
+    required this.reference,
+    required this.transactionDate,
+    required this.amount,
+    required this.mode,
+    required this.category,
   });
 
-  bool get isPending => statut.toUpperCase().contains('PENDING') || statut.toUpperCase().contains('ATTENTE');
-  bool get isEntree => type.toUpperCase() == 'ENTREE';
+  bool get isEntree => category.toUpperCase() != 'CHARGES';
 
   factory WalletTransaction.fromJson(Map<String, dynamic> json) => WalletTransaction(
+        id: (json['id'] as num?)?.toInt() ?? 0,
         label: json['label'] as String? ?? '',
-        montant: (json['montant'] as num?)?.toDouble() ?? 0,
-        type: json['type'] as String? ?? 'ENTREE',
-        statut: json['statut'] as String? ?? '',
-        date: _parseWalletDate(json['date'] as String?),
+        reference: json['reference'] as String? ?? '',
+        transactionDate: _parseWalletDate(json['transactionDate'] as String?),
+        amount: (json['amount'] as num?)?.toDouble() ?? 0,
+        mode: json['mode'] as String? ?? '',
+        category: json['category'] as String? ?? '',
       );
 }
 
 class WalletData {
-  final double soldeDisponible;
-  final double soldeEnAttente;
-  final double totalCeMois;
+  final double availableBalance;
+  final double pendingBalance;
+  final double totalThisMonth;
   final List<WalletTransaction> transactions;
+  final int totalPages;
+  final int totalElements;
 
   const WalletData({
-    required this.soldeDisponible,
-    required this.soldeEnAttente,
-    required this.totalCeMois,
+    required this.availableBalance,
+    required this.pendingBalance,
+    required this.totalThisMonth,
     required this.transactions,
+    required this.totalPages,
+    required this.totalElements,
   });
 
   factory WalletData.fromJson(Map<String, dynamic> json) {
-    final raw = json['transactions'];
-    List<dynamic> txList;
-    if (raw is List) {
-      txList = raw;
-    } else if (raw is Map) {
-      txList = (raw['content'] as List?) ?? (raw['data'] as List?) ?? [];
-    } else {
-      txList = [];
-    }
+    final tx = (json['transactions'] as Map<String, dynamic>?) ?? {};
     return WalletData(
-      soldeDisponible: (json['soldeDisponible'] as num?)?.toDouble() ?? 0,
-      soldeEnAttente: (json['soldeEnAttente'] as num?)?.toDouble() ?? 0,
-      totalCeMois: (json['totalCeMois'] as num?)?.toDouble() ?? 0,
-      transactions: txList
+      availableBalance: (json['availableBalance'] as num?)?.toDouble() ?? 0,
+      pendingBalance: (json['pendingBalance'] as num?)?.toDouble() ?? 0,
+      totalThisMonth: (json['totalThisMonth'] as num?)?.toDouble() ?? 0,
+      totalPages: (tx['totalPages'] as num?)?.toInt() ?? 0,
+      totalElements: (tx['totalElements'] as num?)?.toInt() ?? 0,
+      transactions: (tx['content'] as List? ?? [])
           .map((e) => WalletTransaction.fromJson(e as Map<String, dynamic>))
           .toList(),
     );

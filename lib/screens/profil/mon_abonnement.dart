@@ -245,7 +245,7 @@ class _MonAbonnementPageState extends State<MonAbonnementPage> {
   }
 
   Widget _paymentRow(PaymentHistory p, {bool showDivider = true}) {
-    final isPaid = p.statut.toUpperCase().contains('PAI') || p.statut.toUpperCase().contains('PAY');
+    final isPaid = p.status.toUpperCase().contains('PAI') || p.status.toUpperCase().contains('PAY') || p.status.toUpperCase() == 'SUCCESS';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -255,7 +255,7 @@ class _MonAbonnementPageState extends State<MonAbonnementPage> {
             Row(
               children: [
                 Text(
-                  p.plan,
+                  p.planName,
                   style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14, color: const Color(0xFF2D2520)),
                 ),
                 const SizedBox(width: 8),
@@ -266,7 +266,7 @@ class _MonAbonnementPageState extends State<MonAbonnementPage> {
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
-                    isPaid ? 'Payé' : p.statut,
+                    isPaid ? 'Payé' : p.status,
                     style: GoogleFonts.inter(
                       fontWeight: FontWeight.w600,
                       fontSize: 12,
@@ -277,7 +277,7 @@ class _MonAbonnementPageState extends State<MonAbonnementPage> {
               ],
             ),
             Text(
-              _formatAmount(p.montant),
+              _formatAmount(p.amount),
               style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14, color: const Color(0xFF6F675E)),
             ),
           ],
@@ -286,7 +286,7 @@ class _MonAbonnementPageState extends State<MonAbonnementPage> {
         Text(p.reference, style: GoogleFonts.inter(fontWeight: FontWeight.w400, fontSize: 12, color: const Color(0xFF6A7282))),
         const SizedBox(height: 2),
         Text(
-          '${_formatDateShort(p.date)} • ${_formatPaymentMethod(p.moyenPaiement)}',
+          '${_formatDateShort(p.date)} • ${_formatPaymentMethod(p.paymentMethod)}',
           style: GoogleFonts.inter(fontWeight: FontWeight.w400, fontSize: 12, color: const Color(0xFF6A7282)),
         ),
         if (showDivider) ...[
@@ -460,9 +460,12 @@ class _MonAbonnementPageState extends State<MonAbonnementPage> {
                             children: [
                               Row(
                                 children: [
-                                  Text(
-                                    d!.plan,
-                                    style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 20, height: 1.0, color: const Color(0xFFFFFFFF)),
+                                  Flexible(
+                                    child: Text(
+                                      d!.planName,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 20, height: 1.0, color: const Color(0xFFFFFFFF)),
+                                    ),
                                   ),
                                   const SizedBox(width: 8),
                                   Container(
@@ -486,7 +489,7 @@ class _MonAbonnementPageState extends State<MonAbonnementPage> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                'Abonnement actif jusqu\'au ${_formatDate(d.dateExpiration)}',
+                                'Abonnement actif jusqu\'au ${_formatDate(d.endDate)}',
                                 style: GoogleFonts.inter(fontWeight: FontWeight.w400, fontSize: 12, color: const Color(0xFFBBBBBB)),
                               ),
                             ],
@@ -499,11 +502,11 @@ class _MonAbonnementPageState extends State<MonAbonnementPage> {
 
                     Row(
                       children: [
-                        _infoBox('assets/icons/calen.svg', 'Activation', _formatDateShort(d.dateActivation)),
+                        _infoBox('assets/icons/calen.svg', 'Activation', _formatDateShort(d.startDate)),
                         const SizedBox(width: 12),
                         GestureDetector(
                           onTap: _showPremiumSheet,
-                          child: _infoBox('assets/icons/premium.svg', 'Paiement', _formatPaymentMethod(d.moyenPaiement)),
+                          child: _infoBox('assets/icons/premium.svg', 'Paiement', _formatPaymentMethod(d.paymentMethod)),
                         ),
                       ],
                     ),
@@ -517,9 +520,7 @@ class _MonAbonnementPageState extends State<MonAbonnementPage> {
                         SvgPicture.asset('assets/icons/renew.svg', width: 16, height: 16),
                         const SizedBox(width: 8),
                         Text(
-                          d.renouvellementAuto
-                              ? 'Renouvellement automatique activé'
-                              : 'Renouvellement automatique désactivé',
+                          d.status,
                           style: GoogleFonts.inter(fontWeight: FontWeight.w400, fontSize: 13, color: const Color(0xFFBBBBBB)),
                         ),
                       ],
@@ -552,43 +553,8 @@ class _MonAbonnementPageState extends State<MonAbonnementPage> {
                 const SizedBox(height: 16),
               ],
 
-              // Avantages inclus
-              if (d.avantages.isNotEmpty)
-                Container(
-                  width: 365,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          SvgPicture.asset('assets/icons/avantage.svg', width: 20, height: 20),
-                          const SizedBox(width: 10),
-                          Text('Avantages inclus', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 20, letterSpacing: -0.45, color: const Color(0xFF231F20))),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      ...d.avantages.asMap().entries.map((e) => Padding(
-                        padding: EdgeInsets.only(bottom: e.key < d.avantages.length - 1 ? 14 : 0),
-                        child: Row(
-                          children: [
-                            SvgPicture.asset('assets/icons/donee.svg', width: 20, height: 20),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(e.value, style: GoogleFonts.inter(fontWeight: FontWeight.w400, fontSize: 15, height: 1.0, color: const Color(0xFF2D2520))),
-                            ),
-                          ],
-                        ),
-                      )),
-                    ],
-                  ),
-                ),
-
-              const SizedBox(height: 16),
-
               // Historique des paiements
-              if (d.historiquePaiements.isNotEmpty)
+              if (d.paymentHistory.isNotEmpty)
                 Container(
                   width: 365,
                   padding: const EdgeInsets.all(20),
@@ -608,9 +574,9 @@ class _MonAbonnementPageState extends State<MonAbonnementPage> {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      ...d.historiquePaiements.asMap().entries.map((e) => _paymentRow(
+                      ...d.paymentHistory.asMap().entries.map((e) => _paymentRow(
                         e.value,
-                        showDivider: e.key < d.historiquePaiements.length - 1,
+                        showDivider: e.key < d.paymentHistory.length - 1,
                       )),
                     ],
                   ),

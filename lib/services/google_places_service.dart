@@ -29,6 +29,7 @@ class GooglePlacesService {
     final data = jsonDecode(response.body) as Map<String, dynamic>;
     if (data['status'] != 'OK') return [];
     return (data['predictions'] as List)
+        .where((p) => p['place_id'] != null && p['description'] != null)
         .map((p) => PlacePrediction(
               placeId: p['place_id'] as String,
               description: p['description'] as String,

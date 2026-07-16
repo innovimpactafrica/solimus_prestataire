@@ -6,6 +6,8 @@ import '../home/home.dart';
 import '../../services/user_session.dart';
 import '../demandes/demandes.dart';
 import '../wallet/wallet.dart';
+import '../travaux/travaux.dart';
+import '../../widgets/nav_item.dart';
 import 'informations_personnelles.dart';
 import 'mes_devis.dart';
 import 'mon_abonnement.dart';
@@ -55,29 +57,6 @@ class _ProfilPageState extends State<ProfilPage> {
         });
       }
     } catch (_) {}
-  }
-
-  Widget _navItem(BuildContext ctx, String iconPath, String label, {VoidCallback? onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SvgPicture.asset(iconPath, width: 24, height: 24),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontWeight: FontWeight.w500,
-              fontSize: 10,
-              height: 1.2,
-              color: const Color(0xFFFFFFFF),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _infoRow(String iconPath, String text) {
@@ -217,31 +196,35 @@ class _ProfilPageState extends State<ProfilPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _navItem(ctx, 'assets/icons/accueil.svg', 'Accueil',
+              NavItem(iconPath: 'assets/icons/accueil.svg', label: 'Accueil',
                 onTap: () => Navigator.of(ctx).pushReplacement(PageRouteBuilder(
                   pageBuilder: (c, a, s) => const HomePage(),
-                  transitionsBuilder: (c, anim, s, child) => FadeTransition(
-                    opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut), child: child),
+                  transitionsBuilder: (c, anim, s, child) => FadeTransition(opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut), child: child),
                   transitionDuration: const Duration(milliseconds: 300),
                 ))),
-              const SizedBox(width: 56),
-              _navItem(ctx, 'assets/icons/demande nav.svg', 'Demandes',
+              const SizedBox(width: 30),
+              NavItem(iconPath: 'assets/icons/demande nav.svg', label: 'Demandes',
                 onTap: () => Navigator.of(ctx).pushReplacement(PageRouteBuilder(
                   pageBuilder: (c, a, s) => const DemandesPage(),
-                  transitionsBuilder: (c, anim, s, child) => FadeTransition(
-                    opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut), child: child),
+                  transitionsBuilder: (c, anim, s, child) => FadeTransition(opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut), child: child),
                   transitionDuration: const Duration(milliseconds: 300),
                 ))),
-              const SizedBox(width: 56),
-              _navItem(ctx, 'assets/icons/wallet.svg', 'Wallet',
+              const SizedBox(width: 30),
+              NavItem(iconPath: 'assets/icons/travaux.svg', label: 'Travaux',
+                onTap: () => Navigator.of(ctx).pushReplacement(PageRouteBuilder(
+                  pageBuilder: (c, a, s) => const TravauxPage(),
+                  transitionsBuilder: (c, anim, s, child) => FadeTransition(opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut), child: child),
+                  transitionDuration: const Duration(milliseconds: 300),
+                ))),
+              const SizedBox(width: 30),
+              NavItem(iconPath: 'assets/icons/wallet.svg', label: 'Wallet',
                 onTap: () => Navigator.of(ctx).pushReplacement(PageRouteBuilder(
                   pageBuilder: (c, a, s) => const WalletPage(),
-                  transitionsBuilder: (c, anim, s, child) => FadeTransition(
-                    opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut), child: child),
+                  transitionsBuilder: (c, anim, s, child) => FadeTransition(opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut), child: child),
                   transitionDuration: const Duration(milliseconds: 300),
                 ))),
-              const SizedBox(width: 56),
-              _navItem(ctx, 'assets/icons/profil.svg', 'Mon profil'),
+              const SizedBox(width: 30),
+              const NavItem(iconPath: 'assets/icons/profil.svg', label: 'Mon profil', isActive: true),
             ],
           ),
         ),

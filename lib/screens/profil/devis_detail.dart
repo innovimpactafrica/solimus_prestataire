@@ -109,8 +109,8 @@ class _DevisDetailPageState extends State<DevisDetailPage> {
                 ]),
                 ...d.materiaux.map((m) => pw.TableRow(children: [
                   pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(m.description, style: s(11))),
-                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(m.detail, style: s(11))),
-                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(_formatAmount(m.montant), style: s(11))),
+                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('${m.quantity} x ${m.unitPrice}', style: s(11))),
+                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(_formatAmount(m.subtotal.toDouble()), style: s(11))),
                 ])),
                 pw.TableRow(decoration: const pw.BoxDecoration(color: PdfColors.grey100), children: [
                   pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('Sous-total', style: s(11, bold: true))),
@@ -137,8 +137,8 @@ class _DevisDetailPageState extends State<DevisDetailPage> {
                 ]),
                 ...d.mainOeuvre.map((m) => pw.TableRow(children: [
                   pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(m.description, style: s(11))),
-                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(m.detail, style: s(11))),
-                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(_formatAmount(m.montant), style: s(11))),
+                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('${m.quantity} x ${m.unitPrice}', style: s(11))),
+                  pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(_formatAmount(m.subtotal.toDouble()), style: s(11))),
                 ])),
                 pw.TableRow(decoration: const pw.BoxDecoration(color: PdfColors.grey100), children: [
                   pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('Sous-total', style: s(11, bold: true))),
@@ -218,7 +218,7 @@ class _DevisDetailPageState extends State<DevisDetailPage> {
     );
   }
 
-  Widget _lineItem(String description, String detail, double montant) {
+  Widget _lineItem(String description, int quantity, int unitPrice, int subtotal) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -228,15 +228,13 @@ class _DevisDetailPageState extends State<DevisDetailPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(description, style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14, height: 20 / 14, letterSpacing: -0.15, color: const Color(0xFF231F20))),
-              if (detail.isNotEmpty) ...[
-                const SizedBox(height: 2),
-                Text(detail, style: GoogleFonts.inter(fontWeight: FontWeight.w400, fontSize: 12, height: 1.0, color: const Color(0xFF6A7282))),
-              ],
+              const SizedBox(height: 2),
+              Text('$quantity x ${_formatAmount(unitPrice.toDouble())}', style: GoogleFonts.inter(fontWeight: FontWeight.w400, fontSize: 12, height: 1.0, color: const Color(0xFF6A7282))),
             ],
           ),
         ),
         const SizedBox(width: 12),
-        Text(_formatAmount(montant), style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14, height: 20 / 14, letterSpacing: -0.15, color: const Color(0xFF6F675E))),
+        Text(_formatAmount(subtotal.toDouble()), style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14, height: 20 / 14, letterSpacing: -0.15, color: const Color(0xFF6F675E))),
       ],
     );
   }
@@ -434,7 +432,7 @@ class _DevisDetailPageState extends State<DevisDetailPage> {
                     const SizedBox(height: 16),
                     ...d.materiaux.asMap().entries.map((e) => Padding(
                       padding: EdgeInsets.only(bottom: e.key < d.materiaux.length - 1 ? 12 : 0),
-                      child: _lineItem(e.value.description, e.value.detail, e.value.montant),
+                      child: _lineItem(e.value.description, e.value.quantity, e.value.unitPrice, e.value.subtotal),
                     )),
                     const SizedBox(height: 16),
                     const Divider(color: Color(0xFFF3F4F6), thickness: 1, height: 1),
@@ -465,7 +463,7 @@ class _DevisDetailPageState extends State<DevisDetailPage> {
                     const SizedBox(height: 16),
                     ...d.mainOeuvre.asMap().entries.map((e) => Padding(
                       padding: EdgeInsets.only(bottom: e.key < d.mainOeuvre.length - 1 ? 12 : 0),
-                      child: _lineItem(e.value.description, e.value.detail, e.value.montant),
+                      child: _lineItem(e.value.description, e.value.quantity, e.value.unitPrice, e.value.subtotal),
                     )),
                     const SizedBox(height: 16),
                     const Divider(color: Color(0xFFF3F4F6), thickness: 1, height: 1),

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/auth_models.dart';
+import 'fcm_service.dart';
 
 class AuthService {
   static const _base = 'https://api.solimus.innovimpactdev.cloud';
@@ -27,12 +28,8 @@ class AuthService {
       final result = LoginResponse.fromJson(data);
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('accessToken', result.accessToken);
-      await prefs.setInt('userId', result.id);
-      await prefs.setString('userEmail', result.email);
-      await prefs.setString('firstName', result.firstName);
-      await prefs.setString('lastName', result.lastName);
-      await prefs.setString('role', result.role);
-      await prefs.setString('status', result.status);
+      await prefs.setString('refreshToken', result.refreshToken);
+      FcmService.registerToken();
       return result;
     }
     throw Exception(_extractMessage(response));

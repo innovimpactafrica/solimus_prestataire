@@ -7,8 +7,11 @@ import '../../models/dashboard_models.dart';
 import '../../services/user_session.dart';
 import '../../services/dashboard_service.dart';
 import '../demandes/demandes.dart';
+import '../profil/activation_requise.dart';
 import '../wallet/wallet.dart';
 import '../profil/profil.dart';
+import '../travaux/travaux.dart';
+import '../../widgets/nav_item.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -35,48 +38,73 @@ class _BarChartPainter extends CustomPainter {
   final List<PerformanceHebdo> data;
   _BarChartPainter(this.data);
 
+  String _shortVal(double v) {
+    if (v >= 1000000) return '${(v / 1000000).toStringAsFixed(1)}M';
+    if (v >= 1000) return '${(v / 1000).toStringAsFixed(0)}k';
+    return v.toStringAsFixed(0);
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
     const bottomPadding = 28.0;
     const topPadding = 12.0;
-    const leftPadding = 4.0;
-    final chartHeight = size.height - bottomPadding - topPadding;
-    final maxVal = data.map((e) => e.montant).reduce((a, b) => a > b ? a : b);
-    final barWidth = (size.width / data.length) * 0.45;
-    final gap = size.width / data.length;
-
-    final axisPaint = Paint()
-      ..color = const Color(0xFFE5E7EB)
-      ..strokeWidth = 1.5
-      ..style = PaintingStyle.stroke;
-
-    final barPaint = Paint()..color = const Color(0xFF6F675E);
+    const yLabelCount = 4;
     final textStyle = TextStyle(
       color: const Color(0xFF9CA3AF),
       fontSize: 10,
       fontFamily: GoogleFonts.inter().fontFamily,
     );
 
-    // Axe des ordonnées (trait vertical gauche)
+    // Mesure la largeur max des labels Y
+    final maxVal = data.map((e) => e.montant).reduce((a, b) => a > b ? a : b);
+    double yLabelWidth = 0;
+    for (int i = 0; i <= yLabelCount; i++) {
+      final val = maxVal * i / yLabelCount;
+      final tp = TextPainter(
+        text: TextSpan(text: _shortVal(val), style: textStyle),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      if (tp.width > yLabelWidth) yLabelWidth = tp.width;
+    }
+    const yLabelGap = 6.0;
+    final leftPadding = yLabelWidth + yLabelGap;
+
+    final chartWidth = size.width - leftPadding;
+    final chartHeight = size.height - bottomPadding - topPadding;
+    final barWidth = (chartWidth / data.length) * 0.45;
+    final gap = chartWidth / data.length;
+
+    final axisPaint = Paint()
+      ..color = const Color(0xFFE5E7EB)
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke;
+    final barPaint = Paint()..color = const Color(0xFF6F675E);
+
+    // Lignes horizontales + labels Y
+    for (int i = 0; i <= yLabelCount; i++) {
+      final y = topPadding + chartHeight - (chartHeight * i / yLabelCount);
+      canvas.drawLine(Offset(leftPadding, y), Offset(size.width, y), axisPaint);
+
+      final val = maxVal * i / yLabelCount;
+      final tp = TextPainter(
+        text: TextSpan(text: _shortVal(val), style: textStyle),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      tp.paint(canvas, Offset(yLabelWidth - tp.width, y - tp.height / 2));
+    }
+
+    // Axe vertical gauche
     canvas.drawLine(
       Offset(leftPadding, topPadding),
       Offset(leftPadding, topPadding + chartHeight),
       axisPaint,
     );
 
-    // Axe des abscisses (trait horizontal bas)
-    canvas.drawLine(
-      Offset(leftPadding, topPadding + chartHeight),
-      Offset(size.width, topPadding + chartHeight),
-      axisPaint,
-    );
-
     for (int i = 0; i < data.length; i++) {
-      final x = gap * i + gap / 2;
+      final x = leftPadding + gap * i + gap / 2;
       final barH = maxVal == 0 ? 8.0 : (data[i].montant / maxVal) * chartHeight;
       final effectiveH = barH < 8 ? 8.0 : barH;
 
-      // barre
       final rect = RRect.fromRectAndCorners(
         Rect.fromLTWH(x - barWidth / 2, topPadding + chartHeight - effectiveH, barWidth, effectiveH),
         topLeft: const Radius.circular(4),
@@ -84,7 +112,6 @@ class _BarChartPainter extends CustomPainter {
       );
       canvas.drawRRect(rect, barPaint);
 
-      // label jour
       final tp = TextPainter(
         text: TextSpan(text: data[i].jour, style: textStyle),
         textDirection: TextDirection.ltr,
@@ -100,6 +127,7 @@ class _BarChartPainter extends CustomPainter {
 class _HomePageState extends State<HomePage> {
   DashboardData? _data;
   bool _loading = true;
+  bool _redirecting = false;
   String? _error;
 
   @override
@@ -116,6 +144,15 @@ class _HomePageState extends State<HomePage> {
     try {
       final data = await DashboardService().getDashboard();
       if (mounted) setState(() => _data = data);
+    } on AbonnementInactifException {
+      if (mounted) {
+        setState(() => _redirecting = true);
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const ActivationRequisePage()),
+          (_) => false,
+        );
+      }
+      return;
     } catch (e) {
       if (mounted) {
         setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
@@ -161,29 +198,6 @@ class _HomePageState extends State<HomePage> {
       buf.write(s[i]);
     }
     return '${buf.toString()} FCFA';
-  }
-
-  Widget _navItem(String iconPath, String label, {VoidCallback? onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SvgPicture.asset(iconPath, width: 24, height: 24),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontWeight: FontWeight.w500,
-              fontSize: 10,
-              height: 1.2,
-              color: const Color(0xFFFFFFFF),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _statCard({
@@ -389,7 +403,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBody() {
-    if (_loading) {
+    if (_loading || _redirecting) {
       return const Center(
         child: CircularProgressIndicator(color: Color(0xFF6F675E)),
       );
@@ -635,49 +649,44 @@ class _HomePageState extends State<HomePage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _navItem('assets/icons/accueil.svg', 'Accueil'),
-              const SizedBox(width: 56),
-              _navItem(
-                'assets/icons/demande nav.svg',
-                'Demandes',
-                onTap: () => Navigator.of(ctx).pushReplacement(
-                  PageRouteBuilder(
-                    pageBuilder: (c, a, s) => const DemandesPage(),
-                    transitionsBuilder: (c, anim, s, child) => FadeTransition(
-                      opacity:
-                          CurvedAnimation(parent: anim, curve: Curves.easeOut),
-                      child: child,
-                    ),
-                    transitionDuration: const Duration(milliseconds: 300),
-                  ),
-                ),
+              const NavItem(iconPath: 'assets/icons/accueil.svg', label: 'Accueil', isActive: true),
+              const SizedBox(width: 30),
+              NavItem(
+                iconPath: 'assets/icons/demande nav.svg',
+                label: 'Demandes',
+                onTap: () => Navigator.of(ctx).pushReplacement(PageRouteBuilder(
+                  pageBuilder: (c, a, s) => const DemandesPage(),
+                  transitionsBuilder: (c, anim, s, child) => FadeTransition(opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut), child: child),
+                  transitionDuration: const Duration(milliseconds: 300),
+                )),
               ),
-              const SizedBox(width: 56),
-              _navItem(
-                'assets/icons/wallet.svg',
-                'Wallet',
-                onTap: () => Navigator.of(ctx).pushReplacement(
-                  PageRouteBuilder(
-                    pageBuilder: (c, a, s) => const WalletPage(),
-                    transitionsBuilder: (c, anim, s, child) => FadeTransition(
-                      opacity:
-                          CurvedAnimation(parent: anim, curve: Curves.easeOut),
-                      child: child,
-                    ),
-                    transitionDuration: const Duration(milliseconds: 300),
-                  ),
-                ),
+              const SizedBox(width: 30),
+              NavItem(
+                iconPath: 'assets/icons/travaux.svg',
+                label: 'Travaux',
+                onTap: () => Navigator.of(ctx).pushReplacement(PageRouteBuilder(
+                  pageBuilder: (c, a, s) => const TravauxPage(),
+                  transitionsBuilder: (c, anim, s, child) => FadeTransition(opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut), child: child),
+                  transitionDuration: const Duration(milliseconds: 300),
+                )),
               ),
-              const SizedBox(width: 56),
-              _navItem(
-                'assets/icons/profil.svg',
-                'Mon profil',
+              const SizedBox(width: 30),
+              NavItem(
+                iconPath: 'assets/icons/wallet.svg',
+                label: 'Wallet',
+                onTap: () => Navigator.of(ctx).pushReplacement(PageRouteBuilder(
+                  pageBuilder: (c, a, s) => const WalletPage(),
+                  transitionsBuilder: (c, anim, s, child) => FadeTransition(opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut), child: child),
+                  transitionDuration: const Duration(milliseconds: 300),
+                )),
+              ),
+              const SizedBox(width: 30),
+              NavItem(
+                iconPath: 'assets/icons/profil.svg',
+                label: 'Mon profil',
                 onTap: () => Navigator.of(ctx).pushReplacement(PageRouteBuilder(
                   pageBuilder: (c, a, s) => const ProfilPage(),
-                  transitionsBuilder: (c, anim, s, child) => FadeTransition(
-                      opacity: CurvedAnimation(
-                          parent: anim, curve: Curves.easeOut),
-                      child: child),
+                  transitionsBuilder: (c, anim, s, child) => FadeTransition(opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut), child: child),
                   transitionDuration: const Duration(milliseconds: 300),
                 )),
               ),

@@ -84,15 +84,22 @@ class DevisSummary {
 
 class DevisLineItem {
   final String description;
-  final String detail;
-  final double montant;
+  final int quantity;
+  final int unitPrice;
+  final int subtotal;
 
-  const DevisLineItem({required this.description, required this.detail, required this.montant});
+  const DevisLineItem({
+    required this.description,
+    required this.quantity,
+    required this.unitPrice,
+    required this.subtotal,
+  });
 
   factory DevisLineItem.fromJson(Map<String, dynamic> json) => DevisLineItem(
         description: json['description'] as String? ?? '',
-        detail: json['detail'] as String? ?? '',
-        montant: (json['montant'] as num?)?.toDouble() ?? 0,
+        quantity: (json['quantity'] as num?)?.toInt() ?? 0,
+        unitPrice: (json['unitPrice'] as num?)?.toInt() ?? 0,
+        subtotal: (json['subtotal'] as num?)?.toInt() ?? 0,
       );
 }
 
@@ -186,7 +193,8 @@ class DevisListResponse {
   factory DevisListResponse.fromJson(Map<String, dynamic> json) {
     final devis = (json['devis'] as Map<String, dynamic>?) ?? {};
     return DevisListResponse(
-      totalMontantValide: (json['totalMontantValide'] as num?)?.toDouble() ?? 0,
+      totalMontantValide: (json['totalValidAmount'] as num?)?.toDouble() ??
+          (json['totalMontantValide'] as num?)?.toDouble() ?? 0,
       totalElements: (devis['totalElements'] as num?)?.toInt() ?? 0,
       totalPages: (devis['totalPages'] as num?)?.toInt() ?? 0,
       content: (devis['content'] as List? ?? [])

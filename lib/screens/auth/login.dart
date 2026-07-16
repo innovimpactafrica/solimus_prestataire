@@ -5,6 +5,7 @@ import '../../services/auth_service.dart';
 import 'forgot_password.dart';
 import 'inscription.dart';
 import '../home/home.dart';
+import '../profil/activation_requise.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -84,11 +85,13 @@ class _LoginPageState extends State<LoginPage> {
 
     setState(() => _loading = true);
     try {
-      await AuthService().login(identifier, password);
+      final result = await AuthService().login(identifier, password);
       if (!mounted) return;
       Navigator.of(context).pushAndRemoveUntil(
         PageRouteBuilder(
-          pageBuilder: (_, _, _) => const HomePage(),
+          pageBuilder: (_, _, _) => result.otpRequired
+              ? const ActivationRequisePage()
+              : const HomePage(),
           transitionsBuilder: (_, anim, _, child) => FadeTransition(
             opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut),
             child: child,

@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../home/home.dart';
 import '../wallet/wallet.dart';
 import '../profil/profil.dart';
+import '../travaux/travaux.dart';
+import '../../widgets/nav_item.dart';
 import 'demande_details.dart';
 import '../../services/demandes_service.dart';
 import '../../models/demandes_models.dart';
@@ -17,7 +19,6 @@ class DemandesPage extends StatefulWidget {
 
 class _DemandesPageState extends State<DemandesPage> {
   List<DemandeRequestSummary>? _requests;
-  List<DemandeRequestSummary>? _allRequests;
   int _totalElements = 0;
   bool _loading = true;
   String? _error;
@@ -37,16 +38,21 @@ class _DemandesPageState extends State<DemandesPage> {
   }
 
   Future<void> _load() async {
+    if (!mounted) return;
     setState(() { _loading = true; _error = null; });
     try {
-      final page = await DemandesService().getAvailableRequests();
+      final page = await DemandesService().getAvailableRequests(
+        search: _searchController.text.isEmpty ? null : _searchController.text,
+        status: _selectedStatus,
+      );
+      if (!mounted) return;
       setState(() {
-        _allRequests = page.content;
         _requests = page.content;
-        _totalElements = page.totalElements;
+        _totalElements = page.totalReceivedRequests;
         _loading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = e.toString().replaceFirst('Exception: ', '');
         _loading = false;
@@ -54,29 +60,20 @@ class _DemandesPageState extends State<DemandesPage> {
     }
   }
 
-  void _applyFilters() {
-    final query = _searchController.text.toLowerCase();
-    setState(() {
-      _requests = _allRequests?.where((r) {
-        final matchSearch = query.isEmpty ||
-            r.title.toLowerCase().contains(query) ||
-            r.residenceName.toLowerCase().contains(query);
-        final matchStatus = _selectedStatus == null || r.status == _selectedStatus;
-        return matchSearch && matchStatus;
-      }).toList();
-    });
-  }
+  void _applyFilters() => _load();
 
   void _showFilterSheet() {
     final statuses = [
       null,
-      'Signalé', 'En cours', 'Devis',
-      'Démarré', 'Terminé', 'Validé', 'Clôturé', 'Annulé',
+      'PENDING_QUOTE',
+      'QUOTE_SENT',
+      'REJECTED',
     ];
     final labels = [
       'Tous',
-      'Signalé', 'En cours', 'Devis',
-      'Démarré', 'Terminé', 'Validé', 'Clôturé', 'Annulé',
+      'En attente de devis',
+      'Devis envoyé',
+      'Rejeté',
     ];
     showModalBottomSheet(
       context: context,
@@ -183,29 +180,6 @@ class _DemandesPageState extends State<DemandesPage> {
     }
   }
 
-  Widget _navItem(String iconPath, String label, {VoidCallback? onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SvgPicture.asset(iconPath, width: 24, height: 24),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontWeight: FontWeight.w500,
-              fontSize: 10,
-              height: 1.2,
-              color: const Color(0xFFFFFFFF),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final countLabel = _loading
@@ -238,45 +212,36 @@ class _DemandesPageState extends State<DemandesPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _navItem(
-                'assets/icons/accueil.svg',
-                'Accueil',
-                onTap: () => Navigator.of(ctx).pushReplacement(
-                  PageRouteBuilder(
-                    pageBuilder: (c, a, s) => const HomePage(),
-                    transitionsBuilder: (c, anim, s, child) => FadeTransition(
-                      opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut),
-                      child: child,
-                    ),
-                    transitionDuration: const Duration(milliseconds: 300),
-                  ),
-                ),
+              NavItem(iconPath: 'assets/icons/accueil.svg', label: 'Accueil',
+                onTap: () => Navigator.of(ctx).pushReplacement(PageRouteBuilder(
+                  pageBuilder: (c, a, s) => const HomePage(),
+                  transitionsBuilder: (c, anim, s, child) => FadeTransition(opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut), child: child),
+                  transitionDuration: const Duration(milliseconds: 300),
+                )),
               ),
-              const SizedBox(width: 56),
-              _navItem('assets/icons/demande nav.svg', 'Demandes'),
-              const SizedBox(width: 56),
-              _navItem(
-                'assets/icons/wallet.svg',
-                'Wallet',
-                onTap: () => Navigator.of(ctx).pushReplacement(
-                  PageRouteBuilder(
-                    pageBuilder: (c, a, s) => const WalletPage(),
-                    transitionsBuilder: (c, anim, s, child) => FadeTransition(
-                      opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut),
-                      child: child,
-                    ),
-                    transitionDuration: const Duration(milliseconds: 300),
-                  ),
-                ),
+              const SizedBox(width: 30),
+              const NavItem(iconPath: 'assets/icons/demande nav.svg', label: 'Demandes', isActive: true),
+              const SizedBox(width: 30),
+              NavItem(iconPath: 'assets/icons/travaux.svg', label: 'Travaux',
+                onTap: () => Navigator.of(ctx).pushReplacement(PageRouteBuilder(
+                  pageBuilder: (c, a, s) => const TravauxPage(),
+                  transitionsBuilder: (c, anim, s, child) => FadeTransition(opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut), child: child),
+                  transitionDuration: const Duration(milliseconds: 300),
+                )),
               ),
-              const SizedBox(width: 56),
-              _navItem(
-                'assets/icons/profil.svg',
-                'Mon profil',
+              const SizedBox(width: 30),
+              NavItem(iconPath: 'assets/icons/wallet.svg', label: 'Wallet',
+                onTap: () => Navigator.of(ctx).pushReplacement(PageRouteBuilder(
+                  pageBuilder: (c, a, s) => const WalletPage(),
+                  transitionsBuilder: (c, anim, s, child) => FadeTransition(opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut), child: child),
+                  transitionDuration: const Duration(milliseconds: 300),
+                )),
+              ),
+              const SizedBox(width: 30),
+              NavItem(iconPath: 'assets/icons/profil.svg', label: 'Mon profil',
                 onTap: () => Navigator.of(ctx).pushReplacement(PageRouteBuilder(
                   pageBuilder: (c, a, s) => const ProfilPage(),
-                  transitionsBuilder: (c, anim, s, child) => FadeTransition(
-                    opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut), child: child),
+                  transitionsBuilder: (c, anim, s, child) => FadeTransition(opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut), child: child),
                   transitionDuration: const Duration(milliseconds: 300),
                 )),
               ),
