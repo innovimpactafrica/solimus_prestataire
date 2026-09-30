@@ -123,20 +123,43 @@ class _InformationsPersonnellesPageState extends State<InformationsPersonnellesP
     super.dispose();
   }
 
+  Widget _initialsAvatar() {
+    final entreprise = _entrepriseController.text.trim();
+    final prenom = _prenomController.text.trim();
+    final nom = _nomController.text.trim();
+    String initials;
+    if (entreprise.isNotEmpty) {
+      final parts = entreprise.split(' ').where((p) => p.isNotEmpty).toList();
+      initials = parts.length >= 2 ? '${parts[0][0]}${parts[1][0]}'.toUpperCase() : parts[0][0].toUpperCase();
+    } else {
+      initials = '${prenom.isNotEmpty ? prenom[0] : ''}${nom.isNotEmpty ? nom[0] : ''}'.toUpperCase();
+    }
+    return Container(
+      width: 91,
+      height: 92,
+      color: const Color(0xFFE8E4DC),
+      child: Center(
+        child: Text(
+          initials.isNotEmpty ? initials : '?',
+          style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 32, color: const Color(0xFF6F675E)),
+        ),
+      ),
+    );
+  }
+
   Widget _buildProfileImage() {
-    const fallback = Image(image: AssetImage('assets/images/plumbing.png'), width: 91, height: 92, fit: BoxFit.cover);
-    if (_photoUrl == null || _photoUrl!.isEmpty) return fallback;
+    if (_photoUrl == null || _photoUrl!.isEmpty) return _initialsAvatar();
     if (_photoUrl!.startsWith('data:image')) {
       try {
         final base64Str = _photoUrl!.substring(_photoUrl!.indexOf(',') + 1);
         return Image.memory(base64Decode(base64Str), width: 91, height: 92, fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => fallback);
+            errorBuilder: (_, __, ___) => _initialsAvatar());
       } catch (_) {
-        return fallback;
+        return _initialsAvatar();
       }
     }
     return Image.network(_photoUrl!, width: 91, height: 92, fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => fallback);
+        errorBuilder: (_, __, ___) => _initialsAvatar());
   }
 
   Widget _fieldLabel(String label) {
@@ -291,7 +314,7 @@ class _InformationsPersonnellesPageState extends State<InformationsPersonnellesP
                             ? Image.file(File(_newPhoto!.path), width: 91, height: 92, fit: BoxFit.cover)
                             : _localPhotoPath != null
                                 ? Image.file(File(_localPhotoPath!), width: 91, height: 92, fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => Image.asset('assets/images/plumbing.png', width: 91, height: 92, fit: BoxFit.cover))
+                                    errorBuilder: (_, __, ___) => _initialsAvatar())
                                 : _buildProfileImage(),
                       ),
                     ),

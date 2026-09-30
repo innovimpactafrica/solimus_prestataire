@@ -78,17 +78,29 @@ class _ProfilPageState extends State<ProfilPage> {
     );
   }
 
+  String _initials() {
+    final name = _profile?.companyName.trim() ?? '';
+    if (name.isNotEmpty) {
+      final parts = name.split(' ').where((p) => p.isNotEmpty).toList();
+      if (parts.length >= 2) return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+      return parts[0][0].toUpperCase();
+    }
+    return '?';
+  }
+
   Widget _defaultAvatar() {
     return Container(
       width: 64,
       height: 64,
       color: const Color(0x33FFFFFF),
       child: Center(
-        child: SvgPicture.asset(
-          'assets/icons/photo.svg',
-          width: 28,
-          height: 28,
-          colorFilter: const ColorFilter.mode(Color(0xCCFFFFFF), BlendMode.srcIn),
+        child: Text(
+          _initials(),
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.w700,
+            fontSize: 22,
+            color: Colors.white,
+          ),
         ),
       ),
     );
