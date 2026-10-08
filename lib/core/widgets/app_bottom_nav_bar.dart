@@ -1,0 +1,105 @@
+import 'package:flutter/material.dart';
+import 'nav_item.dart';
+import '../utils/app_colors.dart';
+import '../../features/home/presentation/pages/home.dart';
+import '../../features/demandes/presentation/pages/demandes.dart';
+import '../../features/travaux/presentation/pages/travaux.dart';
+import '../../features/wallet/presentation/pages/wallet.dart';
+import '../../features/profil/presentation/pages/profil.dart';
+
+enum AppTab { home, demandes, travaux, wallet, profil }
+
+class AppBottomNavBar extends StatelessWidget {
+  final AppTab currentTab;
+
+  const AppBottomNavBar({
+    super.key,
+    required this.currentTab,
+  });
+
+  void _navigateTo(BuildContext context, Widget target) {
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (c, a, s) => target,
+        transitionsBuilder: (c, anim, s, child) => FadeTransition(
+          opacity: CurvedAnimation(parent: anim, curve: Curves.easeOut),
+          child: child,
+        ),
+        transitionDuration: const Duration(milliseconds: 300),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 87,
+      padding: const EdgeInsets.only(top: 14),
+      decoration: const BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(50),
+          topRight: Radius.circular(50),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.black10,
+            offset: Offset(0, -1),
+            blurRadius: 32,
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          NavItem(
+            iconPath: 'assets/icons/accueil.svg',
+            label: 'Accueil',
+            isActive: currentTab == AppTab.home,
+            onTap: currentTab == AppTab.home
+                ? null
+                : () => _navigateTo(context, const HomePage()),
+          ),
+          const SizedBox(width: 30),
+          NavItem(
+            iconPath: 'assets/icons/demande nav.svg',
+            label: 'Demandes',
+            isActive: currentTab == AppTab.demandes,
+            onTap: currentTab == AppTab.demandes
+                ? null
+                : () => _navigateTo(context, const DemandesPage()),
+          ),
+          const SizedBox(width: 30),
+          NavItem(
+            iconPath: 'assets/icons/travaux.svg',
+            label: 'Travaux',
+            isActive: currentTab == AppTab.travaux,
+            onTap: currentTab == AppTab.travaux
+                ? null
+                : () => _navigateTo(context, const TravauxPage()),
+          ),
+          const SizedBox(width: 30),
+          NavItem(
+            iconPath: 'assets/icons/wallet.svg',
+            label: 'Wallet',
+            isActive: currentTab == AppTab.wallet,
+            onTap: currentTab == AppTab.wallet
+                ? null
+                : () => _navigateTo(context, const WalletPage()),
+          ),
+          const SizedBox(width: 30),
+          NavItem(
+            iconPath: 'assets/icons/profil.svg',
+            label: 'Mon profil',
+            isActive: currentTab == AppTab.profil,
+            onTap: currentTab == AppTab.profil
+                ? null
+                : () => _navigateTo(context, const ProfilPage()),
+          ),
+        ],
+      ),
+    );
+  }
+}
