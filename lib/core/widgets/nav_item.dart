@@ -5,6 +5,7 @@ import '../utils/app_colors.dart';
 
 class NavItem extends StatefulWidget {
   final String iconPath;
+  final String? activeIconPath;
   final String label;
   final VoidCallback? onTap;
   final bool isActive;
@@ -12,6 +13,7 @@ class NavItem extends StatefulWidget {
   const NavItem({
     super.key,
     required this.iconPath,
+    this.activeIconPath,
     required this.label,
     this.onTap,
     this.isActive = false,
@@ -42,6 +44,11 @@ class _NavItemState extends State<NavItem> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final effectiveIconPath =
+        (widget.isActive && widget.activeIconPath != null)
+            ? widget.activeIconPath!
+            : widget.iconPath;
+
     return GestureDetector(
       onTap: _handleTap,
       behavior: HitTestBehavior.opaque,
@@ -52,7 +59,7 @@ class _NavItemState extends State<NavItem> with SingleTickerProviderStateMixin {
           children: [
             if (_anim.value > 0)
               Opacity(
-                opacity: (1 - _anim.value) * 0.35,
+                opacity: (1 - _anim.value) * 0.25,
                 child: Container(
                   width: 48 * _anim.value,
                   height: 48 * _anim.value,
@@ -67,18 +74,32 @@ class _NavItemState extends State<NavItem> with SingleTickerProviderStateMixin {
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SvgPicture.asset(widget.iconPath, width: 24, height: 24),
-            const SizedBox(height: 4),
+            SizedBox(
+              height: 24,
+              child: Center(
+                child: SvgPicture.asset(
+                  effectiveIconPath,
+                  height: 22,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+            const SizedBox(height: 5),
             Text(
               widget.label,
               style: GoogleFonts.inter(
                 fontWeight:
-                    widget.isActive ? FontWeight.w700 : FontWeight.w500,
-                fontSize: 10,
+                    widget.isActive ? FontWeight.w700 : FontWeight.w400,
+                fontSize: 11,
                 height: 1.2,
-                color: AppColors.white,
+                color: widget.isActive
+                    ? AppColors.white
+                    : AppColors.white.withValues(alpha: 0.5),
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

@@ -7,13 +7,11 @@ import 'package:solimus_prestataire/features/home/data/models/dashboard_models.d
 class AbonnementInactifException implements Exception {}
 
 class DashboardService {
-  static const _base = BaseUrl.api;
-
   Future<DashboardData> getDashboard() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('accessToken') ?? '';
     final response = await http.get(
-      Uri.parse('$_base/api/provider/accueil/dashboard'),
+      Uri.parse(BaseUrl.dashboard),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',

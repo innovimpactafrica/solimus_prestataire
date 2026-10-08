@@ -33,72 +33,85 @@ class AppBottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      height: 87,
-      padding: const EdgeInsets.only(top: 14),
       decoration: const BoxDecoration(
-        color: AppColors.white,
+        color: AppColors.primary,
         borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(50),
-          topRight: Radius.circular(50),
+          topLeft: Radius.circular(36),
+          topRight: Radius.circular(36),
         ),
         boxShadow: [
           BoxShadow(
             color: AppColors.black10,
-            offset: Offset(0, -1),
-            blurRadius: 32,
+            offset: Offset(0, -2),
+            blurRadius: 24,
           ),
         ],
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          NavItem(
-            iconPath: 'assets/icons/accueil.svg',
-            label: 'Accueil',
-            isActive: currentTab == AppTab.home,
-            onTap: currentTab == AppTab.home
-                ? null
-                : () => _navigateTo(context, const HomePage()),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 68,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Expanded(
+                child: NavItem(
+                  iconPath: 'assets/icons/accueil.svg',
+                  activeIconPath: 'assets/icons/accueil_active.svg',
+                  label: 'Accueil',
+                  isActive: currentTab == AppTab.home,
+                  onTap: currentTab == AppTab.home
+                      ? null
+                      : () => _navigateTo(context, const HomePage()),
+                ),
+              ),
+              Expanded(
+                child: NavItem(
+                  iconPath: 'assets/icons/demande nav.svg',
+                  activeIconPath: 'assets/icons/demande_active.svg',
+                  label: 'Demandes',
+                  isActive: currentTab == AppTab.demandes,
+                  onTap: currentTab == AppTab.demandes
+                      ? null
+                      : () => _navigateTo(context, const DemandesPage()),
+                ),
+              ),
+              Expanded(
+                child: NavItem(
+                  iconPath: 'assets/icons/travaux.svg',
+                  activeIconPath: 'assets/icons/travaux_active.svg',
+                  label: 'Travaux',
+                  isActive: currentTab == AppTab.travaux,
+                  onTap: currentTab == AppTab.travaux
+                      ? null
+                      : () => _navigateTo(context, const TravauxPage()),
+                ),
+              ),
+              Expanded(
+                child: NavItem(
+                  iconPath: 'assets/icons/wallet.svg',
+                  activeIconPath: 'assets/icons/wallet_active.svg',
+                  label: 'Wallet',
+                  isActive: currentTab == AppTab.wallet,
+                  onTap: currentTab == AppTab.wallet
+                      ? null
+                      : () => _navigateTo(context, const WalletPage()),
+                ),
+              ),
+              Expanded(
+                child: NavItem(
+                  iconPath: 'assets/icons/profil.svg',
+                  activeIconPath: 'assets/icons/profil_active.svg',
+                  label: 'Mon profil',
+                  isActive: currentTab == AppTab.profil,
+                  onTap: currentTab == AppTab.profil
+                      ? null
+                      : () => _navigateTo(context, const ProfilPage()),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 30),
-          NavItem(
-            iconPath: 'assets/icons/demande nav.svg',
-            label: 'Demandes',
-            isActive: currentTab == AppTab.demandes,
-            onTap: currentTab == AppTab.demandes
-                ? null
-                : () => _navigateTo(context, const DemandesPage()),
-          ),
-          const SizedBox(width: 30),
-          NavItem(
-            iconPath: 'assets/icons/travaux.svg',
-            label: 'Travaux',
-            isActive: currentTab == AppTab.travaux,
-            onTap: currentTab == AppTab.travaux
-                ? null
-                : () => _navigateTo(context, const TravauxPage()),
-          ),
-          const SizedBox(width: 30),
-          NavItem(
-            iconPath: 'assets/icons/wallet.svg',
-            label: 'Wallet',
-            isActive: currentTab == AppTab.wallet,
-            onTap: currentTab == AppTab.wallet
-                ? null
-                : () => _navigateTo(context, const WalletPage()),
-          ),
-          const SizedBox(width: 30),
-          NavItem(
-            iconPath: 'assets/icons/profil.svg',
-            label: 'Mon profil',
-            isActive: currentTab == AppTab.profil,
-            onTap: currentTab == AppTab.profil
-                ? null
-                : () => _navigateTo(context, const ProfilPage()),
-          ),
-        ],
+        ),
       ),
     );
   }

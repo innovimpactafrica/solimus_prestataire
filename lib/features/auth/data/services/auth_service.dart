@@ -7,11 +7,9 @@ import 'package:solimus_prestataire/features/auth/data/models/auth_models.dart';
 import 'package:solimus_prestataire/core/services/fcm_service.dart';
 
 class AuthService {
-  static const _base = BaseUrl.api;
-
   Future<String> register(RegisterRequest req) async {
     final response = await http.post(
-      Uri.parse('$_base/api/auth/register'),
+      Uri.parse(BaseUrl.authRegister),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(req.toJson()),
     );
@@ -21,7 +19,7 @@ class AuthService {
 
   Future<LoginResponse> login(String identifier, String password) async {
     final response = await http.post(
-      Uri.parse('$_base/api/auth/login'),
+      Uri.parse(BaseUrl.authLogin),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'identifier': identifier, 'password': password}),
     );
@@ -39,7 +37,7 @@ class AuthService {
 
   Future<String> verifyCode(String email, String code) async {
     final response = await http.post(
-      Uri.parse('$_base/api/auth/verify-code'),
+      Uri.parse(BaseUrl.authVerifyCode),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email, 'code': code}),
     );
@@ -50,7 +48,7 @@ class AuthService {
   Future<String> setPassword(
       String email, String password, String confirmPassword) async {
     final response = await http.post(
-      Uri.parse('$_base/api/auth/set-password'),
+      Uri.parse(BaseUrl.authSetPassword),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'email': email,
@@ -65,7 +63,7 @@ class AuthService {
   Future<String> resetPassword(
       String token, String password, String confirmPassword) async {
     final response = await http.post(
-      Uri.parse('$_base/api/auth/reset-password'),
+      Uri.parse(BaseUrl.authResetPassword),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'token': token,
@@ -79,7 +77,7 @@ class AuthService {
 
   Future<String> forgotPassword(String emailOrPhone) async {
     final response = await http.post(
-      Uri.parse('$_base/api/auth/forgot-password'),
+      Uri.parse(BaseUrl.authForgotPassword),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'emailOrPhone': emailOrPhone}),
     );
@@ -90,7 +88,7 @@ class AuthService {
   // Retourne le token UUID nécessaire pour reset-password
   Future<String> verifyResetCode(String emailOrPhone, String code) async {
     final response = await http.post(
-      Uri.parse('$_base/api/auth/verify-reset-code'),
+      Uri.parse(BaseUrl.authVerifyResetCode),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'emailOrPhone': emailOrPhone, 'code': code}),
     );
@@ -103,7 +101,7 @@ class AuthService {
 
   Future<String> resendActivationLink(String email) async {
     final response = await http.post(
-      Uri.parse('$_base/api/auth/resend-activation-link'),
+      Uri.parse(BaseUrl.authResendActivationLink),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email}),
     );
@@ -118,7 +116,7 @@ class AuthService {
     final token = prefs.getString('accessToken') ?? '';
     try {
       await http.post(
-        Uri.parse('$_base/api/auth/logout'),
+        Uri.parse(BaseUrl.authLogout),
         headers: {'Authorization': 'Bearer $token'},
       );
     } catch (_) {}

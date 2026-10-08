@@ -10,8 +10,6 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 class FcmService {
-  static const _base = BaseUrl.api;
-
   static Future<void> init() async {
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
@@ -49,7 +47,7 @@ class FcmService {
       }
 
       final response = await http.put(
-        Uri.parse('$_base/api/notifications/fcm-token').replace(
+        Uri.parse(BaseUrl.fcmToken).replace(
           queryParameters: {'fcmToken': token},
         ),
         headers: {'Authorization': 'Bearer $accessToken'},
@@ -61,7 +59,7 @@ class FcmService {
         final t = p.getString('accessToken') ?? '';
         if (t.isEmpty) return;
         await http.put(
-          Uri.parse('$_base/api/notifications/fcm-token').replace(
+          Uri.parse(BaseUrl.fcmToken).replace(
             queryParameters: {'fcmToken': newToken},
           ),
           headers: {'Authorization': 'Bearer $t'},

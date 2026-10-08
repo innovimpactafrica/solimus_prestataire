@@ -29,8 +29,6 @@ class SubscriptionResponse {
 }
 
 class SubscriptionService {
-  static const _base = BaseUrl.api;
-
   Future<SubscriptionResponse> initiate({
     required String method,
     required bool annual,
@@ -38,7 +36,7 @@ class SubscriptionService {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('accessToken') ?? '';
     final response = await http.post(
-      Uri.parse('$_base/api/provider/subscription/initiate'),
+      Uri.parse(BaseUrl.subscriptionInitiate),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',

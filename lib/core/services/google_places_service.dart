@@ -18,7 +18,7 @@ class PlaceCoordinates {
 class GooglePlacesService {
   Future<List<PlacePrediction>> autocomplete(String input) async {
     if (input.trim().length < 2) return [];
-    final uri = Uri.https(BaseUrl.googleMapsHost, '/maps/api/place/autocomplete/json', {
+    final uri = Uri.https(BaseUrl.googleMapsHost, BaseUrl.googlePlacesAutocomplete, {
       'input': input,
       'key': AppConstants.googlePlacesApiKey,
       'language': 'fr',
@@ -38,7 +38,7 @@ class GooglePlacesService {
   }
 
   Future<PlaceCoordinates?> getCoordinates(String placeId) async {
-    final uri = Uri.https(BaseUrl.googleMapsHost, '/maps/api/place/details/json', {
+    final uri = Uri.https(BaseUrl.googleMapsHost, BaseUrl.googlePlacesDetails, {
       'place_id': placeId,
       'fields': 'geometry',
       'key': AppConstants.googlePlacesApiKey,

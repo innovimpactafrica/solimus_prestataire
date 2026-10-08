@@ -82,7 +82,7 @@ class TravauxCard extends StatelessWidget {
                         ),
                         child: Center(
                           child: SvgPicture.asset(
-                            'assets/icons/travaux.svg',
+                            'assets/icons/cle.svg',
                             width: 27.5,
                             height: 27.5,
                           ),

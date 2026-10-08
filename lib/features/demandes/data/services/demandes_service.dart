@@ -11,8 +11,6 @@ import 'package:solimus_prestataire/features/profil/data/models/profile_models.d
 import 'package:solimus_prestataire/features/travaux/data/models/travaux_models.dart';
 
 class DemandesService {
-  static const _base = BaseUrl.api;
-
   Future<Map<String, String>> _authHeaders() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('accessToken') ?? '';
@@ -34,7 +32,7 @@ class DemandesService {
       if (search != null && search.isNotEmpty) 'search': search,
       if (status != null && status.isNotEmpty) 'status': status,
     };
-    final uri = Uri.parse('$_base/api/provider/requests')
+    final uri = Uri.parse(BaseUrl.providerRequests)
         .replace(queryParameters: params);
     final response = await http.get(uri, headers: await _authHeaders());
     if (response.statusCode == 200) {
@@ -46,7 +44,7 @@ class DemandesService {
 
   Future<DemandeRequest> getRequestById(int id) async {
     final response = await http.get(
-      Uri.parse('$_base/api/provider/requests/$id'),
+      Uri.parse(BaseUrl.providerRequestById(id)),
       headers: await _authHeaders(),
     );
     if (response.statusCode == 200) {
@@ -58,7 +56,7 @@ class DemandesService {
 
   Future<void> startRequest(int id) async {
     final response = await http.post(
-      Uri.parse('$_base/api/provider/demandes/requests/$id/start'),
+      Uri.parse(BaseUrl.startDemandeRequest(id)),
       headers: await _authHeaders(),
     );
     if (response.statusCode != 200) {
@@ -68,7 +66,7 @@ class DemandesService {
 
   Future<void> finishRequest(int id) async {
     final response = await http.post(
-      Uri.parse('$_base/api/provider/demandes/requests/$id/finish'),
+      Uri.parse(BaseUrl.finishDemandeRequest(id)),
       headers: await _authHeaders(),
     );
     if (response.statusCode != 200) {
@@ -77,7 +75,7 @@ class DemandesService {
   }
 
   Future<void> addComment(int id, String commentaire) async {
-    final uri = Uri.parse('$_base/api/provider/demandes/requests/$id/comments')
+    final uri = Uri.parse(BaseUrl.demandeComments(id))
         .replace(queryParameters: {'commentaire': commentaire});
     final response = await http.post(uri, headers: await _authHeaders());
     if (response.statusCode != 200) {
@@ -87,7 +85,7 @@ class DemandesService {
 
   Future<DevisDetail> getQuoteById(int id) async {
     final response = await http.get(
-      Uri.parse('$_base/api/provider/profile/quotes/$id'),
+      Uri.parse(BaseUrl.quoteById(id)),
       headers: await _authHeaders(),
     );
     if (response.statusCode == 200) {
@@ -108,7 +106,7 @@ class DemandesService {
       if (statut != null && statut.isNotEmpty) 'statut': statut,
       if (search != null && search.isNotEmpty) 'search': search,
     };
-    final uri = Uri.parse('$_base/api/provider/profile/quotes').replace(queryParameters: params);
+    final uri = Uri.parse(BaseUrl.quotes).replace(queryParameters: params);
     final response = await http.get(uri, headers: await _authHeaders());
     if (response.statusCode == 200) {
       return DevisListResponse.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
@@ -118,9 +116,9 @@ class DemandesService {
 
   Future<List<Map<String, dynamic>>> getEstimatedDelays([int? interventionRequestId]) async {
     final uri = interventionRequestId != null
-        ? Uri.parse('$_base/api/provider/requests/quote/estimated-delays')
+        ? Uri.parse(BaseUrl.quoteEstimatedDelays)
             .replace(queryParameters: {'interventionRequestId': interventionRequestId.toString()})
-        : Uri.parse('$_base/api/provider/requests/quote/estimated-delays');
+        : Uri.parse(BaseUrl.quoteEstimatedDelays);
     final response = await http.get(
       uri,
       headers: await _authHeaders(),
@@ -152,7 +150,7 @@ class DemandesService {
         'additionalComments': additionalComments.trim(),
     };
     final response = await http.post(
-      Uri.parse('$_base/api/provider/requests/quote'),
+      Uri.parse(BaseUrl.createQuote),
       headers: await _authHeaders(),
       body: jsonEncode(body),
     );
@@ -181,7 +179,7 @@ class DemandesService {
 
   Future<void> deleteQuote(int id) async {
     final response = await http.delete(
-      Uri.parse('$_base/api/provider/requests/quote/$id'),
+      Uri.parse(BaseUrl.quoteAction(id)),
       headers: await _authHeaders(),
     );
     if (response.statusCode != 200) {
@@ -204,7 +202,7 @@ class DemandesService {
         'additionalComments': additionalComments,
     };
     final response = await http.patch(
-      Uri.parse('$_base/api/provider/requests/quote/$id'),
+      Uri.parse(BaseUrl.quoteAction(id)),
       headers: await _authHeaders(),
       body: jsonEncode(body),
     );
@@ -229,7 +227,7 @@ class DemandesService {
 
     final request = http.MultipartRequest(
       'PUT',
-      Uri.parse('$_base/api/provider/profil/personal-info'),
+      Uri.parse(BaseUrl.updatePersonalInfo),
     );
     request.headers.addAll(headers);
 
@@ -290,7 +288,7 @@ class DemandesService {
       'redirectFailedUrl': failedUrl,
     };
     final response = await http.post(
-      Uri.parse('$_base/api/provider/profil/subscription/premium'),
+      Uri.parse(BaseUrl.subscriptionPremium),
       headers: await _authHeaders(),
       body: jsonEncode(body),
     );
@@ -306,7 +304,7 @@ class DemandesService {
   }
 
   Future<SubscriptionInfo> getSubscription({int page = 0, int size = 10}) async {
-    final uri = Uri.parse('$_base/api/provider/profile/subscription')
+    final uri = Uri.parse(BaseUrl.subscriptionInfo)
         .replace(queryParameters: {'page': '$page', 'size': '$size'});
     final response = await http.get(uri, headers: await _authHeaders());
     if (response.statusCode == 200) {
@@ -317,7 +315,7 @@ class DemandesService {
 
   Future<ProviderProfile> getProfile() async {
     final response = await http.get(
-      Uri.parse('$_base/api/provider/profile'),
+      Uri.parse(BaseUrl.profile),
       headers: await _authHeaders(),
     );
     if (response.statusCode == 200) {
@@ -347,7 +345,7 @@ class DemandesService {
       'interventionZone': interventionZone,
     };
     final response = await http.put(
-      Uri.parse('$_base/api/provider/profile'),
+      Uri.parse(BaseUrl.profile),
       headers: await _authHeaders(),
       body: jsonEncode(body),
     );
@@ -358,7 +356,7 @@ class DemandesService {
 
   Future<void> updateLocation(double latitude, double longitude) async {
     final response = await http.put(
-      Uri.parse('$_base/api/provider/profile/location'),
+      Uri.parse(BaseUrl.profileLocation),
       headers: await _authHeaders(),
       body: jsonEncode({'latitude': latitude, 'longitude': longitude}),
     );
@@ -369,7 +367,7 @@ class DemandesService {
 
   Future<ProfileInfo> getPersonalInfo() async {
     final response = await http.get(
-      Uri.parse('$_base/api/provider/profile/personal-info'),
+      Uri.parse(BaseUrl.profilePersonalInfo),
       headers: await _authHeaders(),
     );
     if (response.statusCode == 200) {
@@ -380,7 +378,7 @@ class DemandesService {
 
   Future<void> cancelSubscription() async {
     final response = await http.post(
-      Uri.parse('$_base/api/provider/profil/subscription/cancel'),
+      Uri.parse(BaseUrl.subscriptionCancel),
       headers: await _authHeaders(),
     );
     if (response.statusCode != 200) {
@@ -390,7 +388,7 @@ class DemandesService {
 
   Future<void> toggleNotifications() async {
     final response = await http.put(
-      Uri.parse('$_base/api/provider/profile/notifications'),
+      Uri.parse(BaseUrl.profileNotifications),
       headers: await _authHeaders(),
     );
     if (response.statusCode != 200) {
@@ -400,7 +398,7 @@ class DemandesService {
 
   Future<void> toggleAvailability() async {
     final response = await http.post(
-      Uri.parse('$_base/api/provider/profil/toggle-availability'),
+      Uri.parse(BaseUrl.toggleAvailability),
       headers: await _authHeaders(),
     );
     if (response.statusCode != 200) {
@@ -419,7 +417,7 @@ class DemandesService {
       'phoneNumber': phoneNumber,
     };
     final response = await http.post(
-      Uri.parse('$_base/api/provider/wallet/withdraw'),
+      Uri.parse(BaseUrl.walletWithdraw),
       headers: await _authHeaders(),
       body: jsonEncode(body),
     );
@@ -430,7 +428,7 @@ class DemandesService {
 
   Future<TravauxDetail> getTravauxDetail(int id) async {
     final response = await http.get(
-      Uri.parse('$_base/api/provider/travaux/$id'),
+      Uri.parse(BaseUrl.travauxById(id)),
       headers: await _authHeaders(),
     );
     if (response.statusCode == 200) {
@@ -441,7 +439,7 @@ class DemandesService {
 
   Future<void> startTravail(int id) async {
     final response = await http.post(
-      Uri.parse('$_base/api/provider/travaux/$id/start'),
+      Uri.parse(BaseUrl.startTravail(id)),
       headers: await _authHeaders(),
     );
     if (response.statusCode != 200) {
@@ -452,7 +450,7 @@ class DemandesService {
   Future<void> finishTravail(int id, {String? commentaire, List<XFile>? photos}) async {
     final headers = await _authHeaders();
     headers.remove('Content-Type');
-    final uri = Uri.parse('$_base/api/provider/travaux/$id/finish')
+    final uri = Uri.parse(BaseUrl.finishTravail(id))
         .replace(queryParameters: commentaire != null && commentaire.isNotEmpty ? {'commentaire': commentaire} : null);
     final request = http.MultipartRequest('POST', uri);
     request.headers.addAll(headers);
@@ -484,7 +482,7 @@ class DemandesService {
       if (search != null && search.isNotEmpty) 'search': search,
       if (status != null && status.isNotEmpty) 'status': status,
     };
-    final uri = Uri.parse('$_base/api/provider/travaux').replace(queryParameters: params);
+    final uri = Uri.parse(BaseUrl.travaux).replace(queryParameters: params);
     final response = await http.get(uri, headers: await _authHeaders());
     if (response.statusCode == 200) {
       return TravauxPage_.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
@@ -493,7 +491,7 @@ class DemandesService {
   }
 
   Future<WalletData> getWallet({int page = 0, int size = 10}) async {
-    final uri = Uri.parse('$_base/api/provider/wallet')
+    final uri = Uri.parse(BaseUrl.wallet)
         .replace(queryParameters: {'page': '$page', 'size': '$size'});
     final response = await http.get(uri, headers: await _authHeaders());
     if (response.statusCode == 200) {
@@ -504,7 +502,7 @@ class DemandesService {
 
   Future<Map<String, int>> getRequestsCount() async {
     final response = await http.get(
-      Uri.parse('$_base/api/provider/demandes/requests/count'),
+      Uri.parse(BaseUrl.requestsCount),
       headers: await _authHeaders(),
     );
     if (response.statusCode == 200) {
@@ -526,7 +524,7 @@ class DemandesService {
       if (search != null && search.isNotEmpty) 'search': search,
       if (status != null && status.isNotEmpty) 'status': status,
     };
-    final uri = Uri.parse('$_base/api/provider/demandes/my-interventions')
+    final uri = Uri.parse(BaseUrl.myInterventions)
         .replace(queryParameters: params);
     final response = await http.get(uri, headers: await _authHeaders());
     if (response.statusCode == 200) {
@@ -541,7 +539,7 @@ class DemandesService {
     headers.remove('Content-Type');
     final request = http.MultipartRequest(
       'POST',
-      Uri.parse('$_base/api/provider/demandes/requests/$id/work-photos'),
+      Uri.parse(BaseUrl.demandeWorkPhotos(id)),
     );
     request.headers.addAll(headers);
     request.files.add(await http.MultipartFile.fromPath('photo', photo.path));
